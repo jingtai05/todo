@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-paper-50 text-charcoal-950 antialiased;
+  }
+}
+
+@layer utilities {
+  .bg-mesh {
+    background:
+      radial-gradient(900px circle at 18% 12%, rgba(255, 107, 74, 0.22), transparent 55%),
+      radial-gradient(800px circle at 88% 16%, rgba(32, 165, 127, 0.16), transparent 55%),
+      radial-gradient(900px circle at 70% 92%, rgba(255, 134, 108, 0.12), transparent 55%),
+      linear-gradient(180deg, #faf7f2 0%, #f7f2ea 55%, #f3eee6 100%);
+  }
+
+  .glass {
+    @apply bg-white/70 ring-1 ring-charcoal-950/10 backdrop-blur-xl;
+  }
+
+  .gridline {
+    background-image:
+      linear-gradient(to right, rgba(16, 17, 19, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(16, 17, 19, 0.05) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+}
