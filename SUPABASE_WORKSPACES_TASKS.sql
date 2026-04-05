@@ -32,6 +32,12 @@ create table if not exists public.workspace_members (
 
 create index if not exists workspace_members_user_id_idx on public.workspace_members(user_id);
 
+-- If the table already existed, ensure new columns exist
+alter table public.workspace_members
+  add column if not exists request_status text default null; -- 'pending' | null
+
+
+
 -- 3) Tasks (workflow)
 create table if not exists public.tasks (
   id uuid primary key default gen_random_uuid(),
@@ -202,6 +208,16 @@ do $$ begin
         where w.id = workspace_id and w.owner_id = auth.uid()
       )
     );
+  end if;
+
+  -- Allow users to update their own request_status (for Requesting Access)
+  if not exists (select 1 from pg_policies where schemaname='public' and tablename='workspace_members' and policyname='members update self request_status') then
+    create policy "members update self request_status"
+    on public.workspace_members
+    for update
+    to authenticated
+    using (user_id = auth.uid())
+    with check (user_id = auth.uid());
   end if;
 end $$;
 

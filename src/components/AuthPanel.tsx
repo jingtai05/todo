@@ -4,7 +4,8 @@ import { supabase } from '../lib/supabaseClient'
 export function AuthPanel() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [mode, setMode] = useState<'magic' | 'password'>('magic')
+  const [method, setMethod] = useState<'magic' | 'password'>('magic')
+  const [authType, setAuthType] = useState<'signin' | 'signup'>('signin')
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>(
     'idle',
   )
@@ -12,7 +13,6 @@ export function AuthPanel() {
 
   async function sendMagicLink(e: React.FormEvent) {
     e.preventDefault()
-    setMode('magic')
     setMessage('')
     setStatus('sending')
 
@@ -32,32 +32,53 @@ export function AuthPanel() {
     setMessage('Check your email for a sign-in link.')
   }
 
-  async function signInWithPassword(e: React.FormEvent) {
+  async function signInOrUpWithPassword(e: React.FormEvent) {
     e.preventDefault()
-    setMode('password')
     setMessage('')
     setStatus('sending')
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    })
+    if (authType === 'signup') {
+      const { error, data } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+      })
 
-    if (error) {
-      setStatus('error')
-      setMessage(error.message)
-      return
+      if (error) {
+        setStatus('error')
+        setMessage(error.message)
+        return
+      }
+
+      setStatus('sent')
+      if (data.session) {
+        setMessage('Signed up successfully!')
+      } else {
+        setMessage('Check your email for a confirmation link.')
+      }
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      })
+
+      if (error) {
+        setStatus('error')
+        setMessage(error.message)
+        return
+      }
+
+      setStatus('sent')
+      setMessage('Signed in successfully.')
     }
-
-    setStatus('sent')
-    setMessage('Signed in successfully.')
   }
 
   return (
     <div className="glass rounded-2xl p-6 shadow-soft">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <div className="text-sm font-semibold text-charcoal-950">Sign in</div>
+          <div className="text-sm font-semibold text-charcoal-950">
+            {authType === 'signin' ? 'Sign in' : 'Create an account'}
+          </div>
           <div className="mt-1 text-sm text-charcoal-700">
             Magic link or password.
           </div>
@@ -65,9 +86,9 @@ export function AuthPanel() {
         <div className="inline-flex rounded-full bg-paper-100 p-1 text-xs ring-1 ring-charcoal-950/10">
           <button
             type="button"
-            onClick={() => setMode('magic')}
+            onClick={() => setMethod('magic')}
             className={`rounded-full px-3 py-1 font-medium ${
-              mode === 'magic'
+              method === 'magic'
                 ? 'bg-charcoal-950 text-paper-50'
                 : 'text-charcoal-700 hover:text-charcoal-950'
             }`}
@@ -76,9 +97,9 @@ export function AuthPanel() {
           </button>
           <button
             type="button"
-            onClick={() => setMode('password')}
+            onClick={() => setMethod('password')}
             className={`rounded-full px-3 py-1 font-medium ${
-              mode === 'password'
+              method === 'password'
                 ? 'bg-charcoal-950 text-paper-50'
                 : 'text-charcoal-700 hover:text-charcoal-950'
             }`}
@@ -89,7 +110,7 @@ export function AuthPanel() {
       </div>
 
       <form
-        onSubmit={mode === 'magic' ? sendMagicLink : signInWithPassword}
+        onSubmit={method === 'magic' ? sendMagicLink : signInOrUpWithPassword}
         className="mt-5 flex flex-col gap-3"
       >
         <label>
@@ -104,7 +125,7 @@ export function AuthPanel() {
           />
         </label>
 
-        {mode === 'password' && (
+        {method === 'password' && (
           <label>
             <span className="sr-only">Password</span>
             <input
@@ -124,13 +145,24 @@ export function AuthPanel() {
           className="inline-flex items-center justify-center rounded-xl bg-charcoal-950 px-5 py-3 text-sm font-semibold text-paper-50 shadow-crisp transition enabled:hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {status === 'sending'
-            ? mode === 'magic'
-              ? 'Sending…'
-              : 'Signing in…'
-            : mode === 'magic'
+            ? 'Sending…'
+            : method === 'magic'
               ? 'Send magic link'
-              : 'Sign in'}
+              : authType === 'signin' ? 'Sign in' : 'Sign up'}
         </button>
+
+        {method === 'password' && (
+          <div className="mt-2 text-center text-xs text-charcoal-700">
+            {authType === 'signin' ? "Don't have an account? " : "Already have an account? "}
+            <button 
+              type="button" 
+              onClick={() => setAuthType(prev => prev === 'signin' ? 'signup' : 'signin')}
+              className="font-semibold text-charcoal-950 hover:underline"
+            >
+              {authType === 'signin' ? 'Sign up' : 'Sign in'}
+            </button>
+          </div>
+        )}
       </form>
 
       {message && (

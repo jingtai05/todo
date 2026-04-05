@@ -10,6 +10,8 @@ export function Mascot() {
   const wrapRef = useRef<HTMLDivElement | null>(null)
   const [mood, setMood] = useState<Mood>('focused')
   const [p, setP] = useState({ x: 0, y: 0 })
+  const [scrollPeek, setScrollPeek] = useState(0)
+  const [isBouncing, setIsBouncing] = useState(false)
 
   useEffect(() => {
     function onMove(e: PointerEvent) {
@@ -23,8 +25,19 @@ export function Mascot() {
       setP({ x: clamp(dx, -1, 1), y: clamp(dy, -1, 1) })
     }
 
+    function onScroll() {
+      const scrolled = window.scrollY
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight
+      const ratio = scrolled / (maxScroll || 1)
+      setScrollPeek(clamp(ratio * 2 - 1, -1, 1))
+    }
+
     window.addEventListener('pointermove', onMove, { passive: true })
-    return () => window.removeEventListener('pointermove', onMove)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('scroll', onScroll)
+    }
   }, [])
 
   const face = useMemo(() => {
@@ -33,28 +46,44 @@ export function Mascot() {
     return 'Focus mode: on.'
   }, [mood])
 
+  const handlePoke = () => {
+    if (isBouncing) return
+    setIsBouncing(true)
+    setTimeout(() => setIsBouncing(false), 600)
+  }
+
+  // Combine pointer movement with scroll peeking
+  const eyeX = p.x * 4
+  const eyeY = (p.y * 4) + (scrollPeek * 2)
+
   return (
     <div
       ref={wrapRef}
-      className="relative overflow-hidden rounded-3xl bg-paper-100 p-6 ring-1 ring-charcoal-950/10 shadow-soft"
+      onClick={handlePoke}
+      className={`relative cursor-pointer overflow-hidden rounded-[2.5rem] bg-indigo-50/50 p-6 ring-1 ring-indigo-950/5 shadow-crisp backdrop-blur-md transition-all duration-500 ease-out ${
+        isBouncing ? 'scale-90 rotate-2' : 'hover:scale-[1.02] active:scale-95'
+      }`}
     >
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-4 relative z-10">
         <div>
-          <div className="text-sm font-semibold text-charcoal-950">
-            Your tiny co-pilot
+          <div className="text-sm font-bold text-slate-950">
+            Flow Pilot
           </div>
-          <div className="mt-1 text-xs text-charcoal-700">{face}</div>
+          <div className="mt-1 text-xs font-medium text-slate-600">{face}</div>
         </div>
-        <div className="inline-flex rounded-full bg-white/70 p-1 text-xs ring-1 ring-charcoal-950/10">
+        <div className="inline-flex rounded-full bg-white/80 p-1 text-[10px] uppercase tracking-wider font-bold ring-1 ring-slate-950/5">
           {(['focused', 'happy', 'tired'] as const).map((m) => (
             <button
               key={m}
               type="button"
-              onClick={() => setMood(m)}
-              className={`rounded-full px-3 py-1 font-semibold ${
+              onClick={(e) => {
+                e.stopPropagation();
+                setMood(m);
+              }}
+              className={`rounded-full px-3 py-1.5 transition-all ${
                 mood === m
-                  ? 'bg-charcoal-950 text-paper-50'
-                  : 'text-charcoal-700 hover:text-charcoal-950'
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
             >
               {m}
@@ -63,56 +92,54 @@ export function Mascot() {
         </div>
       </div>
 
-      <div className="mt-6 grid place-items-center">
-        <div className="relative h-44 w-44">
-          <div className="absolute inset-0 rounded-[2.25rem] bg-white/70 ring-1 ring-charcoal-950/10" />
-          <div className="absolute inset-0 rounded-[2.25rem] bg-gradient-to-br from-coral-500/20 via-transparent to-moss-500/15" />
+      <div className="mt-8 grid place-items-center relative">
+        {/* Glow effect */}
+        <div className="absolute inset-0 bg-cyan-400/10 blur-[60px] rounded-full" />
+        
+        <div className={`relative h-48 w-48 transition-transform duration-700 ease-out ${isBouncing ? 'animate-bounce' : ''}`}>
+          {/* Main Body */}
+          <div className="absolute inset-0 rounded-[3rem] bg-white ring-1 ring-slate-950/5 shadow-soft" />
+          <div className="absolute inset-0 rounded-[3rem] bg-gradient-to-br from-indigo-500/10 via-transparent to-cyan-500/10" />
 
-          {/* cheeks */}
-          <div className="absolute left-6 top-[96px] h-5 w-8 rounded-full bg-coral-500/15" />
-          <div className="absolute right-6 top-[96px] h-5 w-8 rounded-full bg-coral-500/15" />
+          {/* Cheeks */}
+          <div className="absolute left-8 top-[108px] h-4 w-6 rounded-full bg-indigo-400/10 blur-[2px]" />
+          <div className="absolute right-8 top-[108px] h-4 w-6 rounded-full bg-indigo-400/10 blur-[2px]" />
 
-          {/* eyes */}
-          <div className="absolute left-10 top-12 h-12 w-12 rounded-2xl bg-paper-50 ring-1 ring-charcoal-950/10">
-            <div className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-xl bg-charcoal-950/90">
-              <div
-                className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-paper-50"
-                style={{
-                  transform: `translate(calc(-50% + ${p.x * 4}px), calc(-50% + ${p.y * 4}px))`,
-                }}
-              />
+          {/* Eyes */}
+          <div className="absolute left-10 top-14 h-14 w-14 rounded-3xl bg-slate-50 ring-1 ring-slate-950/5 shadow-inner">
+            <div 
+              className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-[1rem] bg-slate-950 transition-transform duration-300 ease-out"
+              style={{ transform: `translate(calc(-50% + ${eyeX}px), calc(-50% + ${eyeY}px))` }}
+            >
+              <div className="absolute left-1.5 top-1.5 h-2 w-2 rounded-full bg-white opacity-80" />
             </div>
           </div>
-          <div className="absolute right-10 top-12 h-12 w-12 rounded-2xl bg-paper-50 ring-1 ring-charcoal-950/10">
-            <div className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-xl bg-charcoal-950/90">
-              <div
-                className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-paper-50"
-                style={{
-                  transform: `translate(calc(-50% + ${p.x * 4}px), calc(-50% + ${p.y * 4}px))`,
-                }}
-              />
+          
+          <div className="absolute right-10 top-14 h-14 w-14 rounded-3xl bg-slate-50 ring-1 ring-slate-950/5 shadow-inner">
+            <div 
+              className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-[1rem] bg-slate-950 transition-transform duration-300 ease-out"
+              style={{ transform: `translate(calc(-50% + ${eyeX}px), calc(-50% + ${eyeY}px))` }}
+            >
+              <div className="absolute left-1.5 top-1.5 h-2 w-2 rounded-full bg-white opacity-80" />
             </div>
           </div>
 
-          {/* mouth */}
+          {/* Mouth */}
           <div
-            className="absolute left-1/2 top-[108px] h-6 w-10 -translate-x-1/2 rounded-b-2xl border-b-4 border-charcoal-950/70"
+            className="absolute left-1/2 top-[124px] h-4 w-12 -translate-x-1/2 rounded-b-3xl border-b-4 border-slate-950/80 transition-all duration-500"
             style={{
-              borderBottomLeftRadius: mood === 'tired' ? '10px' : '16px',
-              borderBottomRightRadius: mood === 'tired' ? '10px' : '16px',
-              transform: `translateX(-50%) rotate(${mood === 'happy' ? -6 : mood === 'tired' ? 8 : 0}deg)`,
+              height: mood === 'happy' ? '12px' : '4px',
+              borderBottomLeftRadius: mood === 'tired' ? '4px' : '24px',
+              borderBottomRightRadius: mood === 'tired' ? '4px' : '24px',
+              transform: `translateX(-50%) rotate(${mood === 'happy' ? -2 : mood === 'tired' ? 4 : 0}deg)`,
             }}
           />
-
-          {/* wobble on hover */}
-          <div className="absolute inset-0 rounded-[2.25rem] ring-1 ring-transparent transition hover:rotate-1" />
         </div>
       </div>
 
-      <div className="mt-5 text-xs text-charcoal-700">
-        Move your cursor around—eyes follow. Click a mood.
+      <div className="mt-8 text-[10px] font-bold uppercase tracking-widest text-slate-400 text-center">
+        Poke to interact • Eyes follow movement
       </div>
     </div>
   )
 }
-
