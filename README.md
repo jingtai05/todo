@@ -1,73 +1,59 @@
-# React + TypeScript + Vite
+# FlowDesk (Todo / Tasks app)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, Vite + React + TypeScript app for managing workspaces, tasks, and a lightweight “FlowDesk” landing experience. Data/auth are powered by Supabase.
 
-Currently, two official plugins are available:
+## Tech stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Frontend**: Vite, React, TypeScript, Tailwind
+- **Backend**: Supabase (Auth + Postgres)
+- **Charts**: Recharts
+- **Routing**: React Router
 
-## React Compiler
+## Local development
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Install dependencies:
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Set env vars (Supabase):
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- **`VITE_SUPABASE_URL`**
+- **`VITE_SUPABASE_ANON_KEY`**
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+This repo currently includes a `.env` file to make GitHub Pages builds work out-of-the-box.
+
+Run the dev server:
+
+```bash
+npm run dev
 ```
+
+Build for production:
+
+```bash
+npm run build
+```
+
+Preview the production build:
+
+```bash
+npm run preview
+```
+
+## Deployment (GitHub Pages)
+
+This repo deploys automatically to **GitHub Pages** on every push to `main` via `.github/workflows/static.yml`.
+
+Notes:
+
+- The Vite `base` is set to `"/todo/"` in `vite.config.ts` to match the Pages project path.
+- The workflow builds the app and deploys the `dist/` output.
+
+## Project scripts
+
+- **`npm run dev`**: start local dev server
+- **`npm run build`**: build to `dist/`
+- **`npm run preview`**: preview built site
+- **`npm run lint`**: run ESLint
