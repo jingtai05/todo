@@ -20,7 +20,13 @@ export function AuthPanel() {
     const redirectTo = new URL(import.meta.env.BASE_URL, window.location.origin).toString()
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
-      options: { emailRedirectTo: redirectTo },
+      options: {
+        emailRedirectTo: redirectTo,
+        // Make the difference explicit:
+        // - Sign in: do NOT create a new user
+        // - Sign up: create user (then user confirms via email)
+        shouldCreateUser: authType === 'signup',
+      },
     })
 
     if (error) {
@@ -30,7 +36,11 @@ export function AuthPanel() {
     }
 
     setStatus('sent')
-    setMessage('Check your email for a sign-in link.')
+    setMessage(
+      authType === 'signup'
+        ? 'Check your email to confirm your account.'
+        : 'Check your email for a sign-in link.',
+    )
   }
 
   async function signInOrUpWithPassword(e: React.FormEvent) {
@@ -75,39 +85,97 @@ export function AuthPanel() {
 
   return (
     <div className="glass rounded-2xl p-6 shadow-soft">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="text-sm font-semibold text-slate-900">
             {authType === 'signin' ? 'Sign in' : 'Create an account'}
           </div>
-          <div className="mt-1 text-sm text-slate-600">
-            Magic link or password.
+          <div className="mt-1 text-sm text-slate-600">Choose sign-in method.</div>
+        </div>
+        <div className="flex flex-col gap-2 sm:items-end">
+          <div className="inline-flex rounded-full bg-slate-100 p-1 text-xs ring-1 ring-slate-900/10">
+            <button
+              type="button"
+              onClick={() => {
+                setMethod('magic')
+                setStatus('idle')
+                setMessage('')
+              }}
+              className={`rounded-full px-3 py-1 font-medium ${
+                method === 'magic'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Magic link
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMethod('password')
+                setStatus('idle')
+                setMessage('')
+              }}
+              className={`rounded-full px-3 py-1 font-medium ${
+                method === 'password'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Password
+            </button>
+          </div>
+
+          <div className="inline-flex rounded-full bg-white/70 p-1 text-xs ring-1 ring-slate-900/10">
+            <button
+              type="button"
+              onClick={() => {
+                setAuthType('signin')
+                setStatus('idle')
+                setMessage('')
+              }}
+              className={`rounded-full px-3 py-1.5 font-semibold ${
+                authType === 'signin'
+                  ? 'bg-slate-900 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Sign in
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAuthType('signup')
+                setStatus('idle')
+                setMessage('')
+              }}
+              className={`rounded-full px-3 py-1.5 font-semibold ${
+                authType === 'signup'
+                  ? 'bg-slate-900 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Sign up
+            </button>
           </div>
         </div>
-        <div className="inline-flex rounded-full bg-slate-100 p-1 text-xs ring-1 ring-slate-900/10">
-          <button
-            type="button"
-            onClick={() => setMethod('magic')}
-            className={`rounded-full px-3 py-1 font-medium ${
-              method === 'magic'
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Magic link
-          </button>
-          <button
-            type="button"
-            onClick={() => setMethod('password')}
-            className={`rounded-full px-3 py-1 font-medium ${
-              method === 'password'
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Password
-          </button>
-        </div>
+      </div>
+
+      <div className="mt-4 rounded-2xl bg-white/60 px-4 py-3 text-xs font-medium text-slate-700 ring-1 ring-slate-900/10">
+        {method === 'magic' ? (
+          <div>
+            <span className="font-semibold text-slate-900">Magic link:</span> we email you a link. No password needed.
+            {authType === 'signup' ? (
+              <span className="text-slate-600"> (Creates your account, then you confirm via email.)</span>
+            ) : (
+              <span className="text-slate-600"> (Only works if your account already exists.)</span>
+            )}
+          </div>
+        ) : (
+          <div>
+            <span className="font-semibold text-slate-900">Password:</span> sign in or create an account with email + password.
+          </div>
+        )}
       </div>
 
       <form
@@ -148,22 +216,11 @@ export function AuthPanel() {
           {status === 'sending'
             ? 'Sending…'
             : method === 'magic'
-              ? 'Send magic link'
+              ? authType === 'signup'
+                ? 'Send sign-up link'
+                : 'Send sign-in link'
               : authType === 'signin' ? 'Sign in' : 'Sign up'}
         </button>
-
-        {method === 'password' && (
-          <div className="mt-2 text-center text-xs text-slate-600">
-            {authType === 'signin' ? "Don't have an account? " : "Already have an account? "}
-            <button 
-              type="button" 
-              onClick={() => setAuthType(prev => prev === 'signin' ? 'signup' : 'signin')}
-              className="font-semibold text-slate-900 hover:underline"
-            >
-              {authType === 'signin' ? 'Sign up' : 'Sign in'}
-            </button>
-          </div>
-        )}
       </form>
 
       {message && (

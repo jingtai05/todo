@@ -15,7 +15,28 @@ A modern, Vite + React + TypeScript app for managing workspaces, tasks, and a li
 
 ## Local development
 
-### 1) Install dependencies
+### 0) Prerequisites
+
+- **Node.js 20+**
+- **npm** (comes with Node)
+
+### 1) Get the code (clone)
+
+If you have git installed, clone the repo:
+
+```bash
+git clone https://github.com/jingtai05/todo.git
+cd todo
+```
+
+If you forked the repo, clone your fork instead:
+
+```bash
+git clone https://github.com/<your-username>/todo.git
+cd todo
+```
+
+### 2) Install dependencies
 
 In the project folder:
 
@@ -23,7 +44,7 @@ In the project folder:
 npm install
 ```
 
-### 2) Configure Supabase env vars
+### 3) Configure Supabase env vars
 
 Create a `.env` file in the project root with:
 
@@ -32,7 +53,7 @@ Create a `.env` file in the project root with:
 
 This repo currently includes a `.env` file to make GitHub Pages builds work out-of-the-box.
 
-### 2.1) Configure Supabase Auth redirect URLs (required for magic links)
+### 4) Configure Supabase Auth redirect URLs (required for magic links)
 
 In the Supabase dashboard:
 
@@ -45,7 +66,7 @@ In the Supabase dashboard:
 
 If a redirect URL isn’t allow-listed, Supabase may fall back to the Site URL (often `http://localhost:3000/`), which causes the “This site can’t be reached” issue you’re seeing.
 
-### 3) Run locally
+### 5) Run locally
 
 ```bash
 npm run dev
@@ -53,7 +74,7 @@ npm run dev
 
 Then open the URL shown in your terminal (usually `http://localhost:5173`).
 
-### 4) Build & preview (optional)
+### 6) Build & preview (optional)
 
 ```bash
 npm run build
