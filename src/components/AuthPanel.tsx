@@ -76,21 +76,21 @@ export function AuthPanel() {
     <div className="glass rounded-2xl p-6 shadow-soft">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <div className="text-sm font-semibold text-charcoal-950">
+          <div className="text-sm font-semibold text-slate-900">
             {authType === 'signin' ? 'Sign in' : 'Create an account'}
           </div>
-          <div className="mt-1 text-sm text-charcoal-700">
+          <div className="mt-1 text-sm text-slate-600">
             Magic link or password.
           </div>
         </div>
-        <div className="inline-flex rounded-full bg-paper-100 p-1 text-xs ring-1 ring-charcoal-950/10">
+        <div className="inline-flex rounded-full bg-slate-100 p-1 text-xs ring-1 ring-slate-900/10">
           <button
             type="button"
             onClick={() => setMethod('magic')}
             className={`rounded-full px-3 py-1 font-medium ${
               method === 'magic'
-                ? 'bg-charcoal-950 text-paper-50'
-                : 'text-charcoal-700 hover:text-charcoal-950'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             Magic link
@@ -100,8 +100,8 @@ export function AuthPanel() {
             onClick={() => setMethod('password')}
             className={`rounded-full px-3 py-1 font-medium ${
               method === 'password'
-                ? 'bg-charcoal-950 text-paper-50'
-                : 'text-charcoal-700 hover:text-charcoal-950'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             Password
@@ -121,7 +121,7 @@ export function AuthPanel() {
             placeholder="you@company.com"
             type="email"
             required
-            className="w-full rounded-xl bg-white/70 px-4 py-3 text-sm text-charcoal-950 placeholder:text-charcoal-500 ring-1 ring-charcoal-950/10 outline-none focus:ring-charcoal-950/20"
+            className="w-full rounded-xl bg-white/70 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 ring-1 ring-slate-900/10 outline-none focus:ring-indigo-600/30"
           />
         </label>
 
@@ -134,7 +134,7 @@ export function AuthPanel() {
               placeholder="Your password"
               type="password"
               required
-              className="w-full rounded-xl bg-white/70 px-4 py-3 text-sm text-charcoal-950 placeholder:text-charcoal-500 ring-1 ring-charcoal-950/10 outline-none focus:ring-charcoal-950/20"
+              className="w-full rounded-xl bg-white/70 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 ring-1 ring-slate-900/10 outline-none focus:ring-indigo-600/30"
             />
           </label>
         )}
@@ -142,7 +142,7 @@ export function AuthPanel() {
         <button
           type="submit"
           disabled={status === 'sending'}
-          className="inline-flex items-center justify-center rounded-xl bg-charcoal-950 px-5 py-3 text-sm font-semibold text-paper-50 shadow-crisp transition enabled:hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-crisp transition enabled:hover:-translate-y-0.5 enabled:hover:bg-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {status === 'sending'
             ? 'Sending…'
@@ -152,12 +152,12 @@ export function AuthPanel() {
         </button>
 
         {method === 'password' && (
-          <div className="mt-2 text-center text-xs text-charcoal-700">
+          <div className="mt-2 text-center text-xs text-slate-600">
             {authType === 'signin' ? "Don't have an account? " : "Already have an account? "}
             <button 
               type="button" 
               onClick={() => setAuthType(prev => prev === 'signin' ? 'signup' : 'signin')}
-              className="font-semibold text-charcoal-950 hover:underline"
+              className="font-semibold text-slate-900 hover:underline"
             >
               {authType === 'signin' ? 'Sign up' : 'Sign in'}
             </button>

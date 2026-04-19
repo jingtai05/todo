@@ -2,6 +2,10 @@
 
 A modern, Vite + React + TypeScript app for managing workspaces, tasks, and a lightweight “FlowDesk” landing experience. Data/auth are powered by Supabase.
 
+## Live site
+
+- **GitHub Pages**: `https://jingtai05.github.io/todo/`
+
 ## Tech stack
 
 - **Frontend**: Vite, React, TypeScript, Tailwind
@@ -11,32 +15,36 @@ A modern, Vite + React + TypeScript app for managing workspaces, tasks, and a li
 
 ## Local development
 
-Install dependencies:
+### 1) Install dependencies
+
+In the project folder:
 
 ```bash
 npm install
 ```
 
-Set env vars (Supabase):
+### 2) Configure Supabase env vars
+
+Create a `.env` file in the project root with:
 
 - **`VITE_SUPABASE_URL`**
 - **`VITE_SUPABASE_ANON_KEY`**
 
 This repo currently includes a `.env` file to make GitHub Pages builds work out-of-the-box.
 
-Run the dev server:
+### 3) Run locally
 
 ```bash
 npm run dev
 ```
 
-Build for production:
+Then open the URL shown in your terminal (usually `http://localhost:5173`).
+
+### 4) Build & preview (optional)
 
 ```bash
 npm run build
 ```
-
-Preview the production build:
 
 ```bash
 npm run preview
@@ -50,6 +58,17 @@ Notes:
 
 - The Vite `base` is set to `"/todo/"` in `vite.config.ts` to match the Pages project path.
 - The workflow builds the app and deploys the `dist/` output.
+
+### How to deploy your own fork to GitHub Pages (beginner friendly)
+
+1. **Fork this repo** on GitHub.
+2. In your fork, go to **Settings → Pages**.
+3. Under **Build and deployment**, set:
+   - **Source**: GitHub Actions
+4. Push to your fork’s `main` branch.
+5. Wait for the workflow **“Deploy static content to Pages”** to finish in the **Actions** tab.
+6. Your site will be available at:
+   - `https://<your-username>.github.io/todo/`
 
 ## Project scripts
 
