@@ -16,7 +16,8 @@ export function AuthPanel() {
     setMessage('')
     setStatus('sending')
 
-    const redirectTo = `${window.location.origin}/`
+    // Use Vite's BASE_URL so GitHub Pages subpaths (e.g. /todo/) work.
+    const redirectTo = new URL(import.meta.env.BASE_URL, window.location.origin).toString()
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: { emailRedirectTo: redirectTo },

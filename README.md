@@ -32,6 +32,19 @@ Create a `.env` file in the project root with:
 
 This repo currently includes a `.env` file to make GitHub Pages builds work out-of-the-box.
 
+### 2.1) Configure Supabase Auth redirect URLs (required for magic links)
+
+In the Supabase dashboard:
+
+1. Go to **Authentication → URL Configuration**
+2. Set **Site URL** to your primary app URL (recommended):
+   - `https://jingtai05.github.io/todo/`
+3. Add these to **Redirect URLs** (allow-list):
+   - `http://localhost:5173/`
+   - `https://jingtai05.github.io/todo/`
+
+If a redirect URL isn’t allow-listed, Supabase may fall back to the Site URL (often `http://localhost:3000/`), which causes the “This site can’t be reached” issue you’re seeing.
+
 ### 3) Run locally
 
 ```bash
