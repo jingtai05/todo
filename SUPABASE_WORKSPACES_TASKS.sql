@@ -21,6 +21,12 @@ alter table public.workspaces
 
 create index if not exists workspaces_owner_id_idx on public.workspaces(owner_id);
 
+-- Ensure a user can only have ONE personal workspace (prevents duplicates
+-- when ensure_personal_workspace is called concurrently after signup/login).
+create unique index if not exists workspaces_owner_personal_unique
+  on public.workspaces(owner_id)
+  where is_personal = true;
+
 -- 2) Workspace members (team)
 create table if not exists public.workspace_members (
   workspace_id uuid not null references public.workspaces(id) on delete cascade,
@@ -386,9 +392,18 @@ begin
     from generate_series(1, 10)
   );
 
-  insert into public.workspaces(name, owner_id, owner_email, join_code, is_personal)
-  values ('Personal', auth.uid(), email_claim, code, true)
-  returning id into wid;
+  begin
+    insert into public.workspaces(name, owner_id, owner_email, join_code, is_personal)
+    values ('Personal', auth.uid(), email_claim, code, true)
+    returning id into wid;
+  exception
+    when unique_violation then
+      -- Another concurrent call created the personal workspace first.
+      select id into wid
+      from public.workspaces
+      where owner_id = auth.uid() and is_personal = true
+      limit 1;
+  end;
 
   insert into public.workspace_members(workspace_id, user_id, role)
   values (wid, auth.uid(), 'owner')

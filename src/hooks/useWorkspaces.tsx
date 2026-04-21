@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import { supabase } from '../lib/supabaseClient'
 
 export type Workspace = {
@@ -70,9 +70,12 @@ export function useWorkspaces(userId: string) {
     await supabase.rpc('ensure_personal_workspace')
   }, [userId])
 
+  const ensuredForUser = useRef<string | null>(null)
   useEffect(() => {
+    if (!userId || ensuredForUser.current === userId) return
+    ensuredForUser.current = userId
     void ensurePersonalWorkspace().finally(() => load())
-  }, [ensurePersonalWorkspace, load])
+  }, [userId, ensurePersonalWorkspace, load])
 
   // Keep workspace list in sync (joins/leaves) for this user.
   useEffect(() => {
