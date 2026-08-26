@@ -120,7 +120,7 @@ export function TasksPage({
   setFilterPriority: (v: 'all' | 'low' | 'medium' | 'high') => void
   compactMode: boolean
   onActivity: (item: { id: string; at: string; workspaceName: string; text: string; actorId?: string; actorLabel?: string }) => void
-  onWorkspaceContext: (ctx: { id: string; name: string; ownerId: string; isOwner: boolean } | null) => void
+  onWorkspaceContext: (ctx: { id: string; name: string; ownerId: string; isOwner: boolean; joinCode: string } | null) => void
 }) {
   const ws = useWorkspaces(userId)
   const [tasks, setTasks] = useState<Task[]>([])
@@ -137,6 +137,7 @@ export function TasksPage({
   const [editAssigneeId, setEditAssigneeId] = useState<string>('')
   const [editDue, setEditDue] = useState<string>('')
   const [editSaving, setEditSaving] = useState(false)
+  const [copiedJoinCode, setCopiedJoinCode] = useState(false)
 
   useEffect(() => {
     if (!editOpen) return
@@ -273,6 +274,7 @@ export function TasksPage({
       name: ws.activeWorkspace.name,
       ownerId: ws.activeWorkspace.owner_id,
       isOwner: ws.activeWorkspace.owner_id === userId,
+      joinCode: ws.activeWorkspace.join_code,
     })
   }, [ws.activeWorkspace?.id])
 
@@ -1007,12 +1009,14 @@ export function TasksPage({
                     </code>
                     <button
                       type="button"
-                      onClick={() =>
+                      onClick={() => {
                         navigator.clipboard.writeText(ws.activeWorkspace!.join_code)
-                      }
-                      className="rounded-xl bg-slate-950 px-3 py-2 text-xs font-semibold text-slate-50 shadow-crisp"
+                        setCopiedJoinCode(true)
+                        setTimeout(() => setCopiedJoinCode(false), 2000)
+                      }}
+                      className="rounded-xl bg-slate-950 px-3 py-2 text-xs font-semibold text-slate-50 shadow-crisp min-w-[70px] w-[70px] text-center"
                     >
-                      Copy
+                      {copiedJoinCode ? 'Copied' : 'Copy'}
                     </button>
                   </div>
                   <div className="mt-2 text-[11px] text-slate-700">

@@ -100,6 +100,7 @@ export default function App() {
   const [activityOpen, setActivityOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [usersOpen, setUsersOpen] = useState(false)
+  const [inviteModalOpen, setInviteModalOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [globalRequests, setGlobalRequests] = useState<any[]>([])
   const [query, setQuery] = useState('')
@@ -120,6 +121,7 @@ export default function App() {
     name: string
     ownerId: string
     isOwner: boolean
+    joinCode: string
   } | null>(null)
 
   const [confirmState, setConfirmState] = useState<{
@@ -137,6 +139,8 @@ export default function App() {
   const [members, setMembers] = useState<{ userId: string; role: string; requestStatus: string | null; createdAt: string; username: string | null }[]>([])
   const [myUsername, setMyUsername] = useState('')
   const [usernameMsg, setUsernameMsg] = useState<string | null>(null)
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteCopied, setInviteCopied] = useState(false)
 
   const userLabel = useMemo(() => {
     const email = session?.user?.email
@@ -665,9 +669,74 @@ export default function App() {
                       </tbody>
                     </table>
                   </div>
+                  
+                  {activeWorkspace.isOwner && (
+                    <div className="p-4 pt-2">
+                      <button
+                        onClick={() => setInviteModalOpen(true)}
+                        className="w-full rounded-2xl bg-white px-4 py-3 text-sm font-bold text-slate-700 ring-1 ring-slate-950/10 shadow-sm hover:bg-slate-50 transition-colors"
+                      >
+                        + Invite Member
+                      </button>
+                    </div>
+                  )}
                 </div>
               </>
             )}
+          </div>
+        )}
+      </OverlayModal>
+
+      <OverlayModal open={inviteModalOpen} onClose={() => setInviteModalOpen(false)} title="Invite to Workspace" widthClass="max-w-md">
+        {activeWorkspace && (
+          <div className="space-y-6">
+            <div className="rounded-3xl bg-slate-50 p-6 ring-1 ring-slate-950/5">
+              <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Invite via Email</div>
+              <div className="flex flex-col gap-3">
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="colleague@example.com"
+                  className="w-full rounded-2xl bg-white px-4 py-3 text-[13px] font-bold text-slate-950 ring-1 ring-slate-950/10 focus:ring-indigo-500 outline-none placeholder:text-slate-400"
+                />
+                <button
+                  onClick={() => {
+                    if (!inviteEmail.trim()) return
+                    const subject = encodeURIComponent(`Join me on ${activeWorkspace.name}`)
+                    const body = encodeURIComponent(`Hi!\n\nI'd like to invite you to collaborate on the "${activeWorkspace.name}" workspace.\n\nTo join, use this Workspace Code:\n${activeWorkspace.joinCode}\n\nSee you there!`)
+                    window.location.href = `mailto:${inviteEmail.trim()}?subject=${subject}&body=${body}`
+                    setInviteModalOpen(false)
+                    setInviteEmail('')
+                  }}
+                  className="w-full rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-black text-white shadow-md hover:bg-indigo-700 active:scale-95 transition-all"
+                >
+                  Send Invite
+                </button>
+              </div>
+            </div>
+
+            <div className="rounded-3xl bg-slate-50 p-6 ring-1 ring-slate-950/5">
+              <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Workspace Code</div>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 rounded-2xl bg-white px-4 py-3 text-[13px] font-bold text-slate-950 ring-1 ring-slate-950/10 font-mono tracking-wider truncate select-all">
+                  {activeWorkspace.joinCode}
+                </div>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(activeWorkspace.joinCode)
+                    setInviteCopied(true)
+                    setTimeout(() => setInviteCopied(false), 2000)
+                  }}
+                  className="rounded-2xl bg-slate-950 px-0 py-3 text-sm font-black text-white shadow-md hover:bg-slate-800 active:scale-95 transition-all w-[90px] text-center"
+                >
+                  {inviteCopied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+              <div className="mt-3 text-xs text-slate-500 font-medium">
+                Anyone with this code can request to join your workspace.
+              </div>
+            </div>
           </div>
         )}
       </OverlayModal>

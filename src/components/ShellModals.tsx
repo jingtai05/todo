@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
+const activeModals: { id: symbol; close: () => void }[] = []
+
 export function useLocalStorageState<T>(key: string, initial: T) {
   const [value, setValue] = useState<T>(() => {
     try {
@@ -36,11 +38,24 @@ export function OverlayModal({
 }) {
   useEffect(() => {
     if (!open) return
+    const id = Symbol()
+    activeModals.push({ id, close: onClose })
+
     function onKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') {
+        const topModal = activeModals[activeModals.length - 1]
+        if (topModal && topModal.id === id) {
+          e.stopPropagation()
+          topModal.close()
+        }
+      }
     }
     window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      const idx = activeModals.findIndex(m => m.id === id)
+      if (idx > -1) activeModals.splice(idx, 1)
+    }
   }, [onClose, open])
 
   if (!open) return null
@@ -235,22 +250,34 @@ export function ConfirmModal({
 
   useEffect(() => {
     if (!open) return
+    const id = Symbol()
+    activeModals.push({ id, close: onClose })
+
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
-        e.stopPropagation()
-        onClose()
+        const topModal = activeModals[activeModals.length - 1]
+        if (topModal && topModal.id === id) {
+          e.stopPropagation()
+          topModal.close()
+        }
       } else if (e.key === 'Enter') {
-        e.stopPropagation()
-        const disabled = requireTypeToConfirm ? typed.trim() !== requireTypeToConfirm.trim() : false
-        if (!disabled) {
-          onConfirm()
-          onClose()
+        const topModal = activeModals[activeModals.length - 1]
+        if (topModal && topModal.id === id) {
+          e.stopPropagation()
+          const disabled = requireTypeToConfirm ? typed.trim() !== requireTypeToConfirm.trim() : false
+          if (!disabled) {
+            onConfirm()
+            topModal.close()
+          }
         }
       }
     }
-    // Use capture phase so we intercept before sidebar/backdrop handlers
-    window.addEventListener('keydown', onKeyDown, true)
-    return () => window.removeEventListener('keydown', onKeyDown, true)
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      const idx = activeModals.findIndex(m => m.id === id)
+      if (idx > -1) activeModals.splice(idx, 1)
+    }
   }, [onClose, onConfirm, open, requireTypeToConfirm, typed])
 
   if (!open) return null
